@@ -1,5 +1,6 @@
 module Parser exposing (..)
 
+import Array
 import Maybe
 
 
@@ -17,3 +18,14 @@ parseListStr s =
         |> String.split "\n"
         |> List.map String.trim
         |> List.filter (not << String.isEmpty)
+
+
+parseNestedArrayString : String -> Array.Array (Array.Array String)
+parseNestedArrayString s =
+    s
+        |> String.split "\n"
+        |> List.map String.trim
+        |> List.map (List.filter (not << String.isEmpty) << String.split "")
+        |> List.filter (not << List.isEmpty)
+        |> List.map Array.fromList
+        |> Array.fromList
