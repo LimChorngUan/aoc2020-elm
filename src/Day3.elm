@@ -1,0 +1,70 @@
+module Day3 exposing (countTrees1, countTrees2)
+
+import Array exposing (Array, get, length, map)
+import Debug exposing (log)
+
+
+tree : String
+tree =
+    "#"
+
+
+walk : Int -> Int -> Int -> Int -> Array (Array String) -> Int -> Int
+walk xStep yStep x y map trees =
+    let
+        xNew =
+            x + xStep
+
+        yNew =
+            y + yStep
+
+        row : Maybe (Array String)
+        row =
+            get yNew map
+    in
+    case row of
+        Just xs ->
+            let
+                col : Maybe String
+                col =
+                    get (modBy (length xs) xNew) xs
+            in
+            case col of
+                Just spot ->
+                    if spot == tree then
+                        walk xStep yStep xNew yNew map (trees + 1)
+
+                    else
+                        walk xStep yStep xNew yNew map trees
+
+                Nothing ->
+                    log "this shouldn't happen" 0
+
+        Nothing ->
+            trees
+
+
+countTrees1 : Array (Array String) -> Int -> Int
+countTrees1 =
+    walk 3 1 0 0
+
+
+countTrees2 : Array (Array String) -> Int
+countTrees2 map =
+    let
+        trees1 =
+            walk 1 1 0 0 map 0
+
+        trees2 =
+            walk 3 1 0 0 map 0
+
+        trees3 =
+            walk 5 1 0 0 map 0
+
+        trees4 =
+            walk 7 1 0 0 map 0
+
+        trees5 =
+            walk 1 2 0 0 map 0
+    in
+    trees1 * trees2 * trees3 * trees4 * trees5
