@@ -7,7 +7,7 @@ import Maybe
 parseListInt : String -> List Int
 parseListInt s =
     s
-        |> String.split "\n"
+        |> String.lines
         |> List.map String.trim
         |> List.filterMap String.toInt
 
@@ -15,7 +15,7 @@ parseListInt s =
 parseListStr : String -> List String
 parseListStr s =
     s
-        |> String.split "\n"
+        |> String.lines
         |> List.map String.trim
         |> List.filter (not << String.isEmpty)
 
@@ -23,7 +23,7 @@ parseListStr s =
 parseNestedArrayString : String -> Array.Array (Array.Array String)
 parseNestedArrayString s =
     s
-        |> String.split "\n"
+        |> String.lines
         |> List.map String.trim
         |> List.map (List.filter (not << String.isEmpty) << String.split "")
         |> List.filter (not << List.isEmpty)
