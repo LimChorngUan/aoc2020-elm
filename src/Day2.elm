@@ -1,6 +1,7 @@
-module Day2 exposing (validatePassword1, validatePassword2)
+module Day2 exposing (..)
 
 import Maybe
+import Parser exposing ((|.), (|=))
 
 
 type alias PassEntry =
@@ -11,17 +12,19 @@ type alias PassEntry =
     }
 
 
-validatePassword1 : List String -> Int
-validatePassword1 xs =
-    xs
+validatePassword1 : String -> Int
+validatePassword1 data =
+    data
+        |> parseListStr
         |> List.map genPassword
         |> List.filter isValidPassword1
         |> List.length
 
 
-validatePassword2 : List String -> Int
-validatePassword2 xs =
-    xs
+validatePassword2 : String -> Int
+validatePassword2 data =
+    data
+        |> parseListStr
         |> List.map genPassword
         |> List.filter isValidPassword2
         |> List.length
@@ -89,3 +92,27 @@ isValidPassword2 x =
 
         Nothing ->
             False
+
+
+parseListStr : String -> List String
+parseListStr data =
+    data
+        |> Parser.run listStrParser
+        |> Result.toMaybe
+        |> Maybe.withDefault []
+
+
+listStrParser : Parser.Parser (List String)
+listStrParser =
+    Parser.sequence
+        { start = ""
+        , separator = ""
+        , end = ""
+        , spaces = Parser.spaces
+        , item =
+            Parser.getChompedString <|
+                Parser.succeed ()
+                    |. Parser.chompIf (\c -> c /= '\n')
+                    |. Parser.chompWhile (\c -> c /= '\n')
+        , trailing = Parser.Optional
+        }

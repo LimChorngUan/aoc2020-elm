@@ -3,7 +3,7 @@ module Day5 exposing (findHighestSeatId, findMySeatId)
 import Array exposing (Array)
 import List exposing (head)
 import Maybe exposing (withDefault)
-import Parser exposing (parseListStr)
+import Parser exposing ((|.), (|=))
 
 
 type Partition
@@ -111,3 +111,27 @@ parsePartition s =
 
         _ ->
             Nothing
+
+
+parseListStr : String -> List String
+parseListStr data =
+    data
+        |> Parser.run listStrParser
+        |> Result.toMaybe
+        |> Maybe.withDefault []
+
+
+listStrParser : Parser.Parser (List String)
+listStrParser =
+    Parser.sequence
+        { start = ""
+        , separator = ""
+        , end = ""
+        , spaces = Parser.spaces
+        , item =
+            Parser.getChompedString <|
+                Parser.succeed ()
+                    |. Parser.chompIf (\c -> c /= '\n')
+                    |. Parser.chompWhile (\c -> c /= '\n')
+        , trailing = Parser.Optional
+        }

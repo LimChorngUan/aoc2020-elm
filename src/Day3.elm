@@ -2,6 +2,7 @@ module Day3 exposing (countTrees1, countTrees2)
 
 import Array exposing (Array, get, length, map)
 import Debug exposing (log)
+import Html exposing (datalist)
 
 
 tree : String
@@ -44,14 +45,23 @@ walk xStep yStep x y map trees =
             trees
 
 
-countTrees1 : Array (Array String) -> Int -> Int
-countTrees1 =
-    walk 3 1 0 0
-
-
-countTrees2 : Array (Array String) -> Int
-countTrees2 map =
+countTrees1 : String -> Int
+countTrees1 data =
     let
+        map : Array (Array String)
+        map =
+            parse data
+    in
+    walk 3 1 0 0 map 0
+
+
+countTrees2 : String -> Int
+countTrees2 data =
+    let
+        map : Array (Array String)
+        map =
+            parse data
+
         trees1 =
             walk 1 1 0 0 map 0
 
@@ -68,3 +78,14 @@ countTrees2 map =
             walk 1 2 0 0 map 0
     in
     trees1 * trees2 * trees3 * trees4 * trees5
+
+
+parse : String -> Array.Array (Array.Array String)
+parse data =
+    data
+        |> String.lines
+        |> List.map String.trim
+        |> List.map (List.filter (not << String.isEmpty) << String.split "")
+        |> List.filter (not << List.isEmpty)
+        |> List.map Array.fromList
+        |> Array.fromList

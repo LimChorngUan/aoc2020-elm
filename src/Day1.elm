@@ -1,20 +1,23 @@
 module Day1 exposing (part1, part2)
 
 import Maybe
+import Parser
 
 
-part1 : List Int -> Maybe Int
-part1 xs =
-    xs
+part1 : String -> Maybe Int
+part1 data =
+    data
+        |> parseListInt
         |> genPairCombs
         |> List.filter sumIs2020
         |> List.head
         |> getProduct
 
 
-part2 : List Int -> Maybe Int
-part2 xs =
-    xs
+part2 : String -> Maybe Int
+part2 data =
+    data
+        |> parseListInt
         |> genTripleCombs
         |> List.filter sumIs2020
         |> List.head
@@ -50,7 +53,21 @@ getProduct maybe =
             Nothing
 
 
+listIntParser : Parser.Parser (List Int)
+listIntParser =
+    Parser.sequence
+        { start = ""
+        , separator = ""
+        , end = ""
+        , spaces = Parser.spaces
+        , item = Parser.int
+        , trailing = Parser.Optional
+        }
 
-{---- Improvement:
-- generateCombinations using recursion
-----}
+
+parseListInt : String -> List Int
+parseListInt data =
+    data
+        |> Parser.run listIntParser
+        |> Result.toMaybe
+        |> Maybe.withDefault []
