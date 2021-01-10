@@ -45,7 +45,8 @@ playGame turn prevNum gameRecord =
     -- Part 1
     -- if turn == 2020 - 1 then
     -- Part 2
-    if turn == 30000000 - 1 then -- Just wait abit longer :p
+    if turn == 30000000 - 1 then
+        -- Just wait abit longer :p
         currentNum
 
     else

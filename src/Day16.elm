@@ -1,8 +1,8 @@
 module Day16 exposing (part1)
 
+import Dict exposing (Dict)
 import Parser exposing ((|.), (|=), Parser)
 import Set exposing (Set)
-import Dict exposing (Dict)
 
 
 type alias Notes =
@@ -15,7 +15,8 @@ type alias Notes =
 part1 : String -> Int
 part1 data =
     let
-        notes = parseNotes data
+        notes =
+            parseNotes data
 
         allValidRange : List Int
         allValidRange =
@@ -34,7 +35,7 @@ part1 data =
 parseNotes : String -> Notes
 parseNotes data =
     case String.split "\n\n" data of
-        [x, y, z] ->
+        [ x, y, z ] ->
             let
                 rules =
                     x
@@ -55,15 +56,14 @@ parseNotes data =
                         |> List.map (String.split ",")
                         |> List.map (List.filterMap String.toInt)
                         |> List.filter (List.isEmpty >> not)
-
             in
             Notes rules myTicket nearbyTickets
 
         _ ->
-            Notes Dict.empty [] [[]]
+            Notes Dict.empty [] [ [] ]
 
 
-parseRule : String -> Maybe (String, List Int)
+parseRule : String -> Maybe ( String, List Int )
 parseRule x =
     let
         wordParser : Parser String
@@ -72,9 +72,9 @@ parseRule x =
                 |. Parser.chompUntil ": "
                 |> Parser.getChompedString
 
-        ruleParser : Parser (String, List Int)
+        ruleParser : Parser ( String, List Int )
         ruleParser =
-            Parser.succeed (\s x1 x2 y1 y2 -> (s, List.append (List.range x1 x2) (List.range y1 y2)))
+            Parser.succeed (\s x1 x2 y1 y2 -> ( s, List.append (List.range x1 x2) (List.range y1 y2) ))
                 |= wordParser
                 |. Parser.symbol ":"
                 |. Parser.spaces
@@ -87,7 +87,6 @@ parseRule x =
                 |= Parser.int
                 |. Parser.symbol "-"
                 |= Parser.int
-
     in
     x
         |> Parser.run ruleParser
