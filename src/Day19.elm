@@ -12,8 +12,25 @@ type alias EncryptedRules =
 
 
 type alias DecodedRules =
-    Dict Int (List (List String))
+    Dict Int (List String)
 
+
+part1 : String -> Int
+part1 data =
+    let
+        msgs : List String
+        msgs = parseMsgs data
+
+        rules : List String
+        rules =
+            decodeRules (parseDecodedRules data) (parseEncryptedRules data)
+                |> Dict.get 0
+                |> Maybe.withDefault []
+
+    in
+    msgs
+        |> List.filter (\msg -> List.member msg rules)
+        |> List.length
 
 decodeRules : DecodedRules -> EncryptedRules -> DecodedRules
 decodeRules decoded encrypted =
@@ -26,9 +43,12 @@ decodeRules decoded encrypted =
                 |> Dict.filter (canBeDecoded decoded)
                 |> Dict.map (decodeRule decoded)
 
-        f = Debug.log "newlyDecoded" newlyDecoded
+        remainingEncrypted =
+            Dict.keys newlyDecoded
+                |> List.foldl (\k dict -> Dict.remove k dict) encrypted
+
     in
-    decoded
+    decodeRules (Dict.union decoded newlyDecoded) remainingEncrypted
 
 
 canBeDecoded : DecodedRules -> Int -> (List (List Int)) -> Bool
@@ -40,10 +60,33 @@ canBeDecoded decodedRules k v =
         |> List.all (\i -> Dict.member i decodedRules)
 
 
-decodeRule : DecodedRules -> Int -> List (List Int) -> List (List String)
+decodeRule : DecodedRules -> Int -> List (List Int) -> List String
 decodeRule decodedRules k v =
     v
-        |> List.map (List.concatMap (\x -> Dict.get x decodedRules |> Maybe.withDefault [[]] |> List.concat))
+        |> List.map (List.map (\x -> Dict.get x decodedRules |> Maybe.withDefault []))
+        |> List.concatMap getPairs
+
+
+getPairs : List (List String) -> List String
+getPairs lists =
+    if List.length lists == 1 then
+        List.head lists |> Maybe.withDefault []
+    else
+    let
+        arr = Array.fromList lists
+
+        xs = Array.get 0 arr |> Maybe.withDefault []
+        ys = Array.get 1 arr |> Maybe.withDefault []
+
+        res1 = xs |> List.concatMap (\x -> List.map (\y -> String.append x y) ys)
+        res2 = xs |> List.concatMap (\x -> List.map (\y -> String.append x y) (List.reverse ys))
+    in
+    List.append res1 res2
+        |> Set.fromList
+        |> Set.toList
+
+
+-- PARSER
 
 
 parseMsgs : String -> List String
@@ -75,7 +118,7 @@ parseEncryptedRules data =
         |> Dict.fromList
 
 
-decodedRuleParser : Parser (Int, List (List String))
+decodedRuleParser : Parser (Int, List String)
 decodedRuleParser =
     let
         kParser =
@@ -88,7 +131,7 @@ decodedRuleParser =
                 |. Parser.chompUntil "\""
                 |> Parser.getChompedString
     in
-    Parser.succeed (\k v -> (String.toInt k |> Maybe.withDefault -1, [[v]]))
+    Parser.succeed (\k v -> (String.toInt k |> Maybe.withDefault -1, [v]))
         |= kParser
         |. Parser.symbol ":"
         |. Parser.spaces
@@ -102,7 +145,7 @@ encryptedRuleParser =
     let
         kParser =
             Parser.succeed ()
-                |. Parser.chompUntil ":"
+              |. Parser.chompUntil ":"
                 |> Parser.getChompedString
 
         vParser =
@@ -113,9 +156,8 @@ encryptedRuleParser =
 
         toRules s =
             s
-                |> String.replace " " ""
                 |> String.split "|"
-                |> List.map (List.filterMap String.toInt << String.split "")
+                |> List.map (List.filterMap String.toInt << String.split " ")
 
     in
     Parser.succeed (\k v -> (String.toInt k |> Maybe.withDefault -1, toRules v))
@@ -123,18 +165,3 @@ encryptedRuleParser =
         |. Parser.symbol ":"
         |. Parser.spaces
         |= vParser
-
-
-test : String
-test = """0: 4 1 5
-1: 2 3 | 3 2
-2: 4 4 | 5 5
-3: 4 5 | 5 4
-4: "a"
-5: "b"
-
-ababbb
-bababa
-abbbab
-aaabbb
-aaaabbb"""
